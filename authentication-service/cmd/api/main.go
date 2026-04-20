@@ -70,6 +70,7 @@ func openDB(dsn string) (*sql.DB, error) {
 }
 
 func connectToDB() (*sql.DB, error) {
+	// get the connection string from the environment variable set in docker-compose.yml
 	connectionString := os.Getenv("DSN")
 
 	for {
