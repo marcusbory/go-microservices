@@ -18,6 +18,8 @@ import (
 // Docker lets multiple services listen to the same port (80)
 const WEB_PORT = "80"
 
+const MAX_RETRIES = 20
+
 var counts int64
 
 type Config struct {
@@ -81,8 +83,8 @@ func connectToDB() (*sql.DB, error) {
 			return connection, nil
 		}
 
-		// break the loop if we've tried 10 times (20s)
-		if counts > 10 {
+		// break the loop if we've tried MAX_RETRIES times (~40s)
+		if counts > MAX_RETRIES {
 			log.Println(err)
 			return nil, err
 		}
