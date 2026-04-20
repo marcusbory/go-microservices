@@ -1,2 +1,5 @@
 # Ignore built binaries
 bin/
+
+# Ignore DB data
+project/postgres-data/
