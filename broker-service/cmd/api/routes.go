@@ -28,6 +28,9 @@ func (app *Config) routes() http.Handler {
 	// Write a POST request handler to our / endpoint
 	mux.Post("/", app.Broker)
 
+	// single point of entry for app
+	mux.Post("/handle", app.HandleSubmission)
+
 	// add routes
 	return mux
 }
