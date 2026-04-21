@@ -22,6 +22,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	// validate the user against DB
 	user, err := app.Models.User.GetByEmail(requestPayload.Email)
 	if err != nil {
+		// Provide status code for unauthorized
 		app.errorJSON(w, errors.New("invalid credentials"), http.StatusUnauthorized)
 		return
 	}
