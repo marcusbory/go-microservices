@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -34,6 +36,13 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// log authentication event
+	err = app.logEvent("authentication", fmt.Sprintf("User %s logged in", user.Email))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
 	// create a JWT token
 	payload := JSONResponse{
 		Error:   false,
@@ -42,4 +51,36 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) logEvent(name, data string) error {
+	var entry struct {
+		Name string `json:"name"`
+		Data string `json:"data"`
+	}
+
+	entry.Name = name
+	entry.Data = data
+
+	jsonData, _ := json.MarshalIndent(entry, "", "\t")
+
+	request, err := http.NewRequest("POST", "http://logger-service/log", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusAccepted {
+		return errors.New("error calling logger service")
+	}
+
+	return nil
 }
