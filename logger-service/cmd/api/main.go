@@ -28,7 +28,6 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	defer mongoClient.Disconnect(context.TODO())
 
 	// set client
 	client = mongoClient
@@ -46,6 +45,9 @@ func main() {
 }
 
 func connectToMongo() (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
 	// create connection options
 	clientOptions := options.Client().ApplyURI(MONGO_URI)
 	clientOptions.SetAuth(options.Credential{
@@ -54,14 +56,14 @@ func connectToMongo() (*mongo.Client, error) {
 	})
 
 	// connect to MongoDB
-	c, err := mongo.Connect(context.TODO(), clientOptions)
+	c, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Println("Error connecting to MongoDB:", err)
 		return nil, err
 	}
 
 	// check the connection
-	err = c.Ping(context.TODO(), nil)
+	err = c.Ping(ctx, nil)
 	if err != nil {
 		log.Println("Error pinging MongoDB:", err)
 		return nil, err

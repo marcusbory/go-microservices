@@ -34,10 +34,13 @@ func New(mongo *mongo.Client) Models {
 }
 
 func (l *LogEntry) Insert(entry LogEntry) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
 	collection := client.Database("logs").Collection("logs")
 
 	// Need to recreate a log entry because ID is auto, created and updated at are set by the database
-	_, err := collection.InsertOne(context.TODO(), LogEntry{
+	_, err := collection.InsertOne(ctx, LogEntry{
 		Name:      entry.Name,
 		Data:      entry.Data,
 		CreatedAt: time.Now(),
@@ -59,7 +62,7 @@ func (l *LogEntry) All() ([]*LogEntry, error) {
 
 	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
 
-	cursor, err := collection.Find(context.TODO(), bson.D{}, opts)
+	cursor, err := collection.Find(ctx, bson.D{}, opts)
 	if err != nil {
 		log.Println("Error finding all logs:", err)
 		return nil, err
