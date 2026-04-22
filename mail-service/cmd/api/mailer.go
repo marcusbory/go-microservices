@@ -32,6 +32,8 @@ type Message struct {
 }
 
 func (m *Mail) SendSMTPMessage(msg Message) error {
+	// Fallback to default from address if not set in the message
+	// General purpose - BUT only used internally, not exposed to the user (trust)
 	if msg.From == "" {
 		msg.From = m.FromAddress
 	}
