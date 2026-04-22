@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log-service/data"
+	"net/http"
 	"time"
 
 	"log"
@@ -13,13 +16,14 @@ import (
 const (
 	WEB_PORT  = "80"
 	RPC_PORT  = "5001"
-	MONGO_URI = "mongodb://mongo:27017"
+	MONGO_URI = "mongodb://localhost:27017"
 	GRPC_PORT = "50001"
 )
 
 var client *mongo.Client
 
 type Config struct {
+	Models data.Models
 }
 
 func main() {
@@ -42,6 +46,25 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	app := Config{
+		Models: data.New(mongoClient),
+	}
+
+	app.serve()
+}
+
+func (app *Config) serve() {
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", WEB_PORT),
+		Handler: app.routes(),
+	}
+
+	log.Println("Starting logger service on port", WEB_PORT)
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func connectToMongo() (*mongo.Client, error) {
@@ -69,5 +92,6 @@ func connectToMongo() (*mongo.Client, error) {
 		return nil, err
 	}
 
+	log.Println("Connected to MongoDB!")
 	return c, nil
 }
