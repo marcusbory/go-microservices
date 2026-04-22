@@ -12,11 +12,17 @@ type RequestPayload struct {
 	Action string      `json:"action"`
 	Auth   AuthPayload `json:"auth,omitempty"`
 	// TODO: Add other payloads here next time (Log, Mail, AMQP)
+	Log LogPayload `json:"log,omitempty"`
 }
 
 type AuthPayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type LogPayload struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
 }
 
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
@@ -41,17 +47,54 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	switch requestPayload.Action {
 	case "auth":
 		app.authenticate(w, r, requestPayload.Auth)
+	case "log":
+		app.logItem(w, requestPayload.Log)
 	default:
 		app.errorJSON(w, errors.New("unknown action"), http.StatusBadRequest)
 		return
 	}
 }
 
+// For logging
+func (app *Config) logItem(w http.ResponseWriter, l LogPayload) {
+	// create some json that we'll send to the logger microservice
+	jsonData, _ := json.MarshalIndent(l, "", "\t")
+
+	// call the service - whatever we named in our docker-compose.yml + route we defined in the logger service
+	request, err := http.NewRequest("POST", "http://logger-service/log", bytes.NewBuffer(jsonData))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusAccepted {
+		app.errorJSON(w, errors.New("error calling logger service"))
+		return
+	}
+
+	// create a variable we'll read response.Body into
+	var payload JSONResponse
+	payload.Error = false
+	payload.Message = "Logged!"
+	app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+// For authentication
 func (app *Config) authenticate(w http.ResponseWriter, r *http.Request, a AuthPayload) {
 	// create some json that we'll send to the auth microservice
 	jsonData, _ := json.MarshalIndent(a, "", "\t")
 
-	// call the service - whatever we named in our dockerfile
+	// call the service - whatever we named in our docker-compose.yml + route we defined in the authentication service
 	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		app.errorJSON(w, err)
