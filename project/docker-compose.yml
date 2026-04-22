@@ -50,3 +50,18 @@ services:
       - POSTGRES_DB=database # name of the database, not using users because I want portability
     volumes:
       - ./postgres-data:/var/lib/postgresql/data/ # just keeping it at postgres-data folder
+
+  mongo:
+    image: mongo:4.2.16-bionic
+    ports:
+      - "27017:27017"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - MONGO_INITDB_DATABASE=logs
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - ./mongo-data:/data/db # just keeping it at mongo-data folder
