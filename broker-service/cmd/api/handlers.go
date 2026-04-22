@@ -10,9 +10,11 @@ import (
 type RequestPayload struct {
 	// What action wants to be done
 	Action string      `json:"action"`
-	Auth   AuthPayload `json:"auth,omitempty"`
+	Auth   AuthPayload `json:"auth"`
+
 	// TODO: Add other payloads here next time (Log, Mail, AMQP)
-	Log LogPayload `json:"log,omitempty"`
+	Log  LogPayload  `json:"log"`
+	Mail MailPayload `json:"mail"`
 }
 
 type AuthPayload struct {
@@ -23,6 +25,13 @@ type AuthPayload struct {
 type LogPayload struct {
 	Name string `json:"name"`
 	Data string `json:"data"`
+}
+
+type MailPayload struct {
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
 }
 
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
@@ -49,10 +58,46 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, r, requestPayload.Auth)
 	case "log":
 		app.logItem(w, requestPayload.Log)
+	case "mail":
+		app.sendMail(w, requestPayload.Mail)
 	default:
 		app.errorJSON(w, errors.New("unknown action"), http.StatusBadRequest)
 		return
 	}
+}
+
+// For sending mail
+func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
+	// create some json that we'll send to the mail microservice
+	jsonData, _ := json.MarshalIndent(m, "", "\t")
+
+	// call the service - whatever we named in our docker-compose.yml + route we defined in the mail service
+	request, err := http.NewRequest("POST", "http://mail-service/send", bytes.NewBuffer(jsonData))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusAccepted {
+		app.errorJSON(w, errors.New("error calling mail service"))
+		return
+	}
+
+	// create a variable we'll read response.Body into
+	var payload JSONResponse
+	payload.Error = false
+	payload.Message = "Email sent to " + m.To
+	app.writeJSON(w, http.StatusAccepted, payload)
 }
 
 // For logging
