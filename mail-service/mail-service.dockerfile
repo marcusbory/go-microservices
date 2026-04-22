@@ -22,5 +22,8 @@ RUN mkdir /app
 
 COPY --from=builder /app/mailApp /app
 
+# copy the templates to the container
+COPY templates /templates
+
 CMD ["/app/mailApp"]
 
