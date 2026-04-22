@@ -90,3 +90,31 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+
+  mail-service:
+    build:
+      context: ../mail-service
+      dockerfile: ../mail-service/mail-service.dockerfile # Dockerfile to use
+    restart: always
+    # No need ports because mail is used internally by the broker
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog # this is the name of the internal service for mailhog, set above
+      MAIL_PORT: 1025
+      MAIL_USERNAME: "" # MailHog does not require a username and password
+      MAIL_PASSWORD: "" # MailHog does not require a username and password
+      MAIL_ENCRYPTION: none
+      FROM_NAME: "No-Reply @ Company Name"
+      FROM_ADDRESS: "no-reply@mydomain.com" # TODO: Change to your production email address
+      # In production, you may use SendGrid or another email service provider
+      # Configure SENDGRID API keys here
+
+      # Also, here's a common example of the FROM_* environment variables:
+      # FROM_NAME: "Company Name (No Reply)"
+      # FROM_ADDRESS: "no-reply@yourcompanydomain.com"
+      # Make sure you own the email address, align SPF, DKIM, and DMARC records
+
+      # Might use different variables for production and development, or marketing vs support emails
