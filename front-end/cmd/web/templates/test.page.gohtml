@@ -9,6 +9,7 @@
 
                 <a id='brokerBtn' class='btn btn-outline-secondary' href='javascript:void(0);'>Test Broker</a>
                 <a id='authenticationBtn' class='btn btn-outline-secondary' href='javascript:void(0);'>Test Authentication</a>
+                <a id='loggerBtn' class='btn btn-outline-secondary' href='javascript:void(0);'>Test Logger</a>
 
                 <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
                     <span class="text-muted">Output shows here...</span>
@@ -36,10 +37,49 @@
     <script>
         const brokerBtn = document.getElementById('brokerBtn');
         const authenticationBtn = document.getElementById('authenticationBtn');
+        const loggerBtn = document.getElementById('loggerBtn');
         const output = document.getElementById('output');
         const sent = document.getElementById('payload');
         const received = document.getElementById('received');
-        
+
+        // for logger service
+        loggerBtn.addEventListener('click', (e) => {
+            const payload = {
+                action: 'log',
+                log: {
+                    name: 'Test Logger',
+                    data: 'This is a test log',
+                }
+            }
+            const headers = new Headers();
+
+            headers.append('Content-Type', 'application/json');
+
+            const requestBody = {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload),
+            }
+
+            // backend url is http://localhost:8080
+            fetch('http:\/\/localhost:8080/handle', requestBody)
+                .then(response => response.json())
+                .then(data => {
+                    sent.innerHTML = JSON.stringify(payload, null, 4);
+                    received.innerHTML = JSON.stringify(data, null, 4);
+                    if (data.error) {
+                        output.innerHTML += `<br><br>Error: ${data.message}`;
+                    } else {
+                        output.innerHTML += `<br><strong>Response from logger service:</strong><br>${data.message}`;
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                    output.innerHTML += `<br><br>Error: ${error}`;
+                });
+        });
+
+        // for broker service
         brokerBtn.addEventListener('click', (e) => {
             const body = {
                 method: 'POST',
@@ -62,6 +102,7 @@
                 });
         });
 
+        // for authentication service
         authenticationBtn.addEventListener('click', (e) => {
             const payload = {
                 action: 'auth',
