@@ -140,6 +140,19 @@ That’s confusing because it means the `Find` call itself does **not** use your
 
 **Rule of thumb**: create one request/operation context (`ctx`) and pass it everywhere for that operation (`Find`, `FindOne`, `UpdateOne`, cursor iteration, etc.). Using `context.TODO()` is typically a placeholder when you haven’t wired a “real” context through yet.
 
+### 1a) What’s the difference between `context.Background()` and `context.TODO()`? Why use `context.Background()` here?
+
+- **`context.Background()`**: use this when you need a “root” context and you *don’t* have a better one to derive from (common in `main()`, initialization, tests, or in libraries that must start a new tree of work).
+- **`context.TODO()`**: a placeholder root context that signals “we haven’t decided what context should be used here yet”.
+
+They behave the same at runtime (both are empty root contexts with no deadline and no cancellation), but they communicate **different intent** to humans and tooling.
+
+In this logger service, we create:
+
+- `ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)`
+
+We use `context.Background()` because we’re deliberately creating a new operation-scoped context with a deadline. Once you have that `ctx`, the “rule of thumb” is to pass **that** `ctx` into all the MongoDB calls for the operation (instead of mixing in `context.TODO()`).
+
 ### 2) Why specify both BSON and JSON tags if MongoDB uses BSON?
 
 You’re using the same struct (`LogEntry`) for **two different encodings**:
@@ -180,4 +193,34 @@ In your file:
 
 - Use **`bson.M`** for most simple filters.
 - Use **`bson.D`** for updates/operators and command-like documents, and when you’re following driver examples that use `bson.D`.
+
+### 4) How does `context.WithTimeout` work? Will the query fail after 15 seconds?
+
+`context.WithTimeout(parent, 15*time.Second)` returns a derived context (`ctx`) that has a **deadline**: “now + 15 seconds”.
+
+What that means in practice:
+
+- If the MongoDB operation finishes before the deadline, everything proceeds normally.
+- If the deadline is exceeded, `ctx.Done()` is closed and `ctx.Err()` becomes `context.DeadlineExceeded`.
+- The MongoDB Go driver uses that context to **cancel in-flight work** and return an error from the call that was using the context (e.g. `Find`, `FindOne`, `UpdateOne`, or even `cursor.Next` during iteration).
+
+So yes: if the query (or cursor iteration) takes longer than ~15 seconds, you should expect the call to return an error consistent with a timeout/cancellation (commonly `context deadline exceeded`, sometimes wrapped by the driver).
+
+### 5) I see `context.TODO()` in `cmd/api/main.go` for `Connect`, `Ping`, and `Disconnect`. Should those use `ctx` too?
+
+Generally, yes.
+
+In `main()` / startup code, `context.TODO()` often appears early in a project as a placeholder. But for operations like:
+
+- `mongo.Connect(...)`
+- `client.Ping(...)`
+- `client.Disconnect(...)`
+
+it’s usually better to create an explicit timeout context and pass that same `ctx` into the whole operation so:
+
+- connection attempts don’t hang indefinitely
+- ping has a clear deadline
+- disconnect has a bounded time to clean up resources
+
+In this repo we updated `connectToMongo()` to create a `ctx` with `context.WithTimeout(context.Background(), 15*time.Second)` and use that `ctx` for both `Connect` and `Ping`, and we removed the extra `Disconnect(context.TODO())` in `main()` in favor of a single deferred disconnect with a timeout context.
 
