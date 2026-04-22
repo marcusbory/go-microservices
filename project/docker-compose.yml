@@ -80,3 +80,13 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - ./mongo-data:/data/db # just keeping it at mongo-data folder
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025" # web interface: access through localhost:8025
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
