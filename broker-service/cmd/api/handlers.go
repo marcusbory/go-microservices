@@ -66,6 +66,8 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ! These functions will be deprecated because we will be using RabbitMQ (queue system to process asynchronously)
+
 // For sending mail
 func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	// create some json that we'll send to the mail microservice
