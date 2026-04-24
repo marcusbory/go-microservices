@@ -58,7 +58,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, r, requestPayload.Auth)
 	case "log":
 		// ? Instead of logging via logger service, we will be logging via RabbitMQ
-		app.logEventViaRabit(w, requestPayload.Log)
+		app.logEventViaRabbit(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:

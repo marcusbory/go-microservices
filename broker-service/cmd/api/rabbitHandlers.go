@@ -8,7 +8,7 @@ import (
 )
 
 // ? New function handle logging
-func (app *Config) logEventViaRabit(w http.ResponseWriter, logPayload LogPayload) {
+func (app *Config) logEventViaRabbit(w http.ResponseWriter, logPayload LogPayload) {
 	err := app.pushToQueue(logPayload.Name, logPayload.Data)
 	if err != nil {
 		app.errorJSON(w, err)
