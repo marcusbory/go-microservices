@@ -26,6 +26,7 @@ func (app *Config) logEventViaGRPC(w http.ResponseWriter, r *http.Request) {
 
 	// create a new client using new code
 	log.Println("Dialing Logger Service")
+	// conn, err := grpc.Dial(fmt.Sprintf("logger-service:%s", GRPC_PORT), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	conn, err := grpc.NewClient(fmt.Sprintf("logger-service:%s", GRPC_PORT),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
