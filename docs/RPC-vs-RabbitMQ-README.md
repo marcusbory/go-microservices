@@ -2,7 +2,7 @@
 
 This write-up clarifies why you have two “logging paths” in `broker-service` (RPC vs RabbitMQ), what each mechanism is *for*, and a few common misunderstandings.
 
-**Note**: RPC in Golang requires both microservices communicating to be **written in Golang**. This can be resolved by switching to gRPC (protobuf).
+**Note**: RPC in Golang requires both microservices communicating to be **written in Golang**. This can be resolved by switching to gRPC (`protoc` generates code for other languages' backends).
 
 ## The one-sentence difference
 
