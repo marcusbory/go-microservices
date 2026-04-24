@@ -58,6 +58,7 @@ func main() {
 	rpc.HandleHTTP()
 
 	go app.rpcListen()
+	go app.gRPCListen()
 
 	app.serve()
 }
