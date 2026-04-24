@@ -28,8 +28,8 @@ services:
         sslmode=disable timezone=UTC connect_timeout=5
     depends_on:
       - postgres
-      # NOTE: DSN can be listed in object form (DSN:"...") or list form (- DSN="...")
-      # Note: List form cannot have line break - will spoil parsing
+      # ! NOTE: DSN can be listed in object form (DSN:"...") or list form (- DSN="...")
+      # ! Note: List form cannot have line break - will spoil parsing
 
       # Host - service connected to
       # Port - port of the service

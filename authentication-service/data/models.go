@@ -15,7 +15,7 @@ const dbTimeout = time.Second * 3
 
 var db *sql.DB
 
-// Models is the type for this package. Note that any model that is included as a member
+// ! Models is the type for this package. Note that any model that is included as a member
 // in this type is available to us throughout the application, anywhere that the
 // app variable is used, provided that the model is also added in the New function.
 type Models struct {

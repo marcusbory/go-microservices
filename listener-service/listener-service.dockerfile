@@ -11,7 +11,7 @@ COPY . /app
 WORKDIR /app
 
 # build the application into the listenerApp binary
-# take note, no cmd/api folder because we're not using a web server, so we're building the main.go file
+# ! take note, no cmd/api folder because we're not using a web server, so we're building the main.go file
 RUN CGO_ENABLED=0 go build -o listenerApp ./main.go
 
 RUN chmod +x /app/listenerApp
