@@ -31,6 +31,9 @@ func (app *Config) routes() http.Handler {
 	// single point of entry for app
 	mux.Post("/handle", app.HandleSubmission)
 
+	// ! Separate route for gRPC to make it easier to read
+	mux.Post("/log-grpc", app.logEventViaGRPC)
+
 	// add routes
 	return mux
 }
