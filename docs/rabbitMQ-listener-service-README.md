@@ -96,11 +96,11 @@ For payloads with `Name` `"log"` or `"event"` (and also default case), listener 
 
 This preserves your “logger-service owns persistence” design, but moves the call off the broker’s critical path.
 
-## Answers to your 5 questions
+## FAQ
 
 ### 1) Broker connects to RabbitMQ using `connect()` (backoff)
 
-**Confirmed.** Broker’s `main()` connects once at startup, stores the connection in `Config{Rabbit: rabbitConn}`, and reuses it for emitting events.
+Broker’s `main()` connects once at startup, stores the connection in `Config{Rabbit: rabbitConn}`, and reuses it for emitting events.
 
 Relevant code:
 
@@ -108,16 +108,16 @@ Relevant code:
 
 ### 2) What does `broker-service/event/event.go` do?
 
-**It’s a small RabbitMQ “infrastructure” helper module** that defines how your system declares:
+**It’s a small RabbitMQ “infrastructure” helper module**, but only part of it is relevant to the broker’s publishing role:
 
-- the shared **exchange** (`declareExchange`) named `logs_topic` of type `topic`, durable
-- a **random exclusive queue** (`declareRandomQueue`) used by consumers (mainly the listener)
+- **Relevant for Broker (publisher)**: `declareExchange(ch)` ensures the shared topic exchange (`logs_topic`) exists. Your broker emitter calls this during `NewEventEmitter(...).setup()` before publishing.
+- **Not needed for Broker (publisher-only)**: `declareRandomQueue(ch)` is a *consumer pattern* (auto-named exclusive queue) and is used by `listener-service` when it binds to topics and consumes.
 
-It centralizes these declarations so both emitter/consumer code uses the same exchange name/type and the same queue-declare policy.
+> Think of `declareExchange(ch)` as setting up / identifying the **shared mailroom (`logs_topic`) where the broker drops messages (publish), and listeners receive them by subscribing (consume) to routing-key patterns.
 
 ### 3) Deleting the consumer from Broker because Broker only emits
 
-**Confirmed.** In this architecture:
+In this architecture:
 
 - `broker-service` is a **publisher** (emits events)
 - `listener-service` is the **consumer** (receives events and triggers side effects)
@@ -126,11 +126,11 @@ So a consumer in `broker-service` would be redundant unless you explicitly wante
 
 ### 4) `broker-service/event/emitter.go` is Broker-specific (queues work)
 
-**Confirmed.** `Emitter` is a broker-side abstraction that publishes messages to RabbitMQ (`logs_topic`) with a routing key (severity/topic). That’s exactly the broker’s role in your design: queue work/events for asynchronous processing.
+`Emitter` is a broker-side abstraction that publishes messages to RabbitMQ (`logs_topic`) with a routing key (severity/topic). That’s exactly the broker’s role in your design: queue work/events for asynchronous processing.
 
 ### 5) `rabbitHandlers.go` replaces direct logger calls by emitting events
 
-**Confirmed.** Previously, `handlers.go:logItem` directly called `logger-service` synchronously.
+Previously, `handlers.go:logItem` directly called `logger-service` synchronously.
 
 Now:
 
