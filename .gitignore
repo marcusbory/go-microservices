@@ -4,3 +4,4 @@ bin/
 # Ignore DB data
 project/postgres-data/
 project/mongo-data/
+project/rabbitmq-data/
