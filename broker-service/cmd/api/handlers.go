@@ -59,6 +59,9 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "log":
 		// ? Instead of logging via logger service, we will be logging via RabbitMQ
 		app.logEventViaRabbit(w, requestPayload.Log)
+	case "log-rpc":
+		// ? Communicate with logger service using RPC
+		app.logEventViaRPC(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
