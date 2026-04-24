@@ -49,8 +49,8 @@ Listener uses the same connection pattern in `listener-service/main.go`.
 
 On `POST` to Broker’s submission endpoint, `HandleSubmission` routes `"log"` to RabbitMQ publishing:
 
-- `broker-service/cmd/api/handlers.go`: `HandleSubmission` → `app.logEventViaRabit(w, requestPayload.Log)`
-- `broker-service/cmd/api/rabbitHandlers.go`: `logEventViaRabit` → `pushToQueue`
+- `broker-service/cmd/api/handlers.go`: `HandleSubmission` → `app.logEventViaRabbit(w, requestPayload.Log)`
+- `broker-service/cmd/api/rabbitHandlers.go`: `logEventViaRabbit` → `pushToQueue`
 
 `pushToQueue`:
 
@@ -134,7 +134,7 @@ So a consumer in `broker-service` would be redundant unless you explicitly wante
 
 Now:
 
-- Broker `"log"` action calls `logEventViaRabit` (RabbitMQ publish)
+- Broker `"log"` action calls `logEventViaRabbit` (RabbitMQ publish)
 - Listener consumes and calls `logger-service`
 
 Net effect: logging is **asynchronous** from the broker’s perspective and decoupled by RabbitMQ.
