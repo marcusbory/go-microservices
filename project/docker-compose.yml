@@ -118,3 +118,14 @@ services:
       # Make sure you own the email address, align SPF, DKIM, and DMARC records
 
       # Might use different variables for production and development, or marketing vs support emails
+
+  listener-service:
+    image: rabbitmq:3.9-alpine # no need web management portal
+    ports:
+      - "5672:5672" # default port for RabbitMQ
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq/data # just keeping it at rabbitmq-data folder
