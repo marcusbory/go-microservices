@@ -57,7 +57,8 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.authenticate(w, r, requestPayload.Auth)
 	case "log":
-		app.logItem(w, requestPayload.Log)
+		// ? Instead of logging via logger service, we will be logging via RabbitMQ
+		app.logEventViaRabit(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
@@ -66,6 +67,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ? New function handle logging written in rabbitHandlers.go
 // ! These functions will be deprecated because we will be using RabbitMQ (queue system to process asynchronously)
 
 // For sending mail
