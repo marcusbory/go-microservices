@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broker-deployment
+  labels:
+    app: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broker
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      containers:
+        - name: broker
+          image: marcusbory/broker:latest
+          ports:
+            - containerPort: 80 # broker listens on :80 inside the container (broker-service/main.go)
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker-service
+spec:
+  selector:
+    app: broker
+  ports:
+    - protocol: TCP
+      name: main-port
+      port: 80
+      targetPort: 80
+  type: ClusterIP # by default, ClusterIP is used
