@@ -119,7 +119,7 @@ services:
 
       # Might use different variables for production and development, or marketing vs support emails
 
-  rabbitmq:
+  rabbitmq-service:
     image: rabbitmq:3.9-alpine # no need web management portal
     ports:
       - "5672:5672" # default port for RabbitMQ

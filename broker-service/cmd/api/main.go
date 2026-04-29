@@ -51,7 +51,9 @@ func connect() (*amqp.Connection, error) {
 
 	// don't continue until RabbitMQ is ready
 	for {
-		c, err := amqp.Dial("amqp://guest:guest@rabbitmq")
+		c, err := amqp.Dial("amqp://guest:guest@rabbitmq-service")
+		// Must match the Kubernetes Service DNS name for RabbitMQ.
+		// Will change for docker-compose.yml
 		if err != nil {
 			fmt.Println("RabbitMQ not ready yet...")
 			counts++
