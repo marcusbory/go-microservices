@@ -66,7 +66,7 @@ services:
       # does not guarantee readiness of the service
       - mongo
 
-  mongo:
+  mongo-service:
     image: mongo:4.2.16-bionic
     ports:
       - "27017:27017"
