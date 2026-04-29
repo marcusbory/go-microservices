@@ -164,3 +164,7 @@ In your project:
 - So the broker should dial: `amqp://guest:guest@rabbitmq-service`
 
 Once the hostname matches, the broker stops crashing/restarting and connects to RabbitMQ successfully.
+
+Other examples include:
+- `listener-service/main.go`: `amqp://guest:guest@rabbitmq-service` as per above (listener processes MQ)
+- `logger-service/cmd/api/main.go`: `MONGO_URI` needs to be updated to `mongo-service` endpoint to match K8s DNS
