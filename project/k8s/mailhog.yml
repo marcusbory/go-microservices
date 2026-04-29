@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailhog-deployment
+  labels:
+    app: mailhog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailhog
+  template:
+    metadata:
+      labels:
+        app: mailhog
+    spec:
+      containers:
+        - name: mailhog
+          image: mailhog/mailhog:latest
+          ports: # descriptive of what goes on
+            - containerPort: 1025 # mailhog listens on :1025 inside the container (mail-service/main.go)
+            - containerPort: 8025 # mailhog listens on :8025 inside the container (mail-service/main.go)
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailhog-service
+spec:
+  selector:
+    app: mailhog
+  ports:
+    - protocol: TCP
+      name: smtp-port # for actual emails
+      port: 1025
+      targetPort: 1025
+    - protocol: TCP
+      name: web-port # for web interface
+      port: 8025
+      targetPort: 8025
+  type: ClusterIP # by default, ClusterIP is used
+
