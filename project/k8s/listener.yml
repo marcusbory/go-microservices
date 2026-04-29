@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listener-deployment
+  labels:
+    app: listener # cosmetic, or for org / filter / tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: listener # used for service routing
+  template:
+    metadata:
+      labels:
+        app: listener # used for service routing
+    spec:
+      containers:
+        - name: listener
+          image: marcusbory/listener:latest
+          ports:
+            - containerPort: 80 # listener listens on :80 inside the container (listener-service/main.go)
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: listener-service # must match the name of the service in the listener-service/
+spec:
+  selector:
+    app: listener # used for service routing (as above)
+  ports:
+    - protocol: TCP
+      name: main-port
+      port: 80
+      targetPort: 80
+  type: ClusterIP # by default, ClusterIP is used
+
+
