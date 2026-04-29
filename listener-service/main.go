@@ -45,7 +45,7 @@ func connect() (*amqp.Connection, error) {
 
 	// don't continue until RabbitMQ is ready
 	for {
-		c, err := amqp.Dial("amqp://guest:guest@rabbitmq")
+		c, err := amqp.Dial("amqp://guest:guest@rabbitmq-service") // must match the name of the service in the project/k8s/rabbitmq.yml
 		if err != nil {
 			fmt.Println("RabbitMQ not ready yet...")
 			counts++
