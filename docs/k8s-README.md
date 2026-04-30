@@ -258,3 +258,18 @@ So:
 
 If you want to avoid making the broker publicly reachable, change the flow so the browser calls only the
 frontend, and the frontend (server-side, from inside the cluster) calls `http://broker-service`.
+
+### 6) What is `minikube tunnel` for?
+
+In **minikube**, `Service` objects of type `LoadBalancer` don’t get a real cloud load balancer automatically, so
+their `EXTERNAL-IP` often stays `<pending>`.
+
+Running:
+
+```sh
+minikube tunnel
+```
+
+creates a network route from your machine to the minikube cluster and assigns a reachable external IP to those
+`LoadBalancer` Services. Keep it running while you want to access the service externally (it may prompt for
+sudo/admin privileges).
