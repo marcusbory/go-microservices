@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  # This name allows authentication service to connect to the Postgres service running outside the cluster.
+spec:
+  # This Service does not select any Pods. It just provides in-cluster DNS
+  # for a Postgres instance running outside the cluster (e.g. via docker compose).
+  type: ExternalName
+  # For minikube on macOS, this resolves to the host machine.
+  externalName: host.minikube.internal
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
