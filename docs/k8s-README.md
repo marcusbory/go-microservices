@@ -173,3 +173,32 @@ Once the hostname matches, the broker stops crashing/restarting and connects to 
 Other examples include:
 - `listener-service/main.go`: `amqp://guest:guest@rabbitmq-service` as per above (listener processes MQ)
 - `logger-service/cmd/api/main.go`: `MONGO_URI` needs to be updated to `mongo-service` endpoint to match K8s DNS
+
+### 4) Connecting a K8s Pod to a *local* docker-compose Postgres
+
+If Postgres is running via Docker Compose on your machine and published on `localhost:5432`, a Kubernetes Pod
+won't be able to reach it via the Docker Compose service name (e.g. `postgres-service`) unless Kubernetes
+also has a Service with that name.
+
+This repo includes `project/k8s/postgres-external.yml`, which creates a Kubernetes Service named
+`postgres-service` that resolves to `host.minikube.internal` (for minikube on macOS).
+
+Under the hood, this is an `ExternalName` Service, which is best thought of as a **DNS alias** inside the
+cluster:
+- It provides a stable in-cluster hostname (`postgres-service`) for clients to use
+- It does **not** create/load-balance to Pod endpoints (there are no Pods behind it)
+- Clients connect **directly** to the external host after DNS resolution
+
+Apply it:
+
+```sh
+kubectl apply -f project/k8s/postgres-external.yml
+```
+
+Then your Pod DSN can remain:
+
+`host=postgres-service port=5432 ...`
+
+Notes:
+- If you are using **Docker Desktop Kubernetes**, you likely want `host.docker.internal` instead.
+- If you are using **kind**, you typically need to use the host gateway IP or run Postgres inside the cluster.
