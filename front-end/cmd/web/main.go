@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-const FRONTEND_PORT = "8081"
+const FRONTEND_PORT = "8081" // remains unchanged
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,12 @@ func render(w http.ResponseWriter, t string) {
 		return
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+	var data struct {
+		BrokerURL string
+	}
+	data.BrokerURL = "http://localhost:80" // 80 is the port used by broker service
+
+	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

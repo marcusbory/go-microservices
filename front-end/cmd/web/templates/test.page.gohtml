@@ -67,9 +67,9 @@
                 body: JSON.stringify(payload),
             }
 
-            // backend url is http://localhost:8080
+            // backend url is {{.BrokerURL}}
             // ! Using separate route for gRPC, so make sure to use the correct route
-            fetch('http:\/\/localhost:8080/log-grpc', requestBody)
+            fetch('{{.BrokerURL}}/log-grpc', requestBody)
                 .then(response => response.json())
                 .then(data => {
                     sent.innerHTML = JSON.stringify(payload, null, 4);
@@ -105,8 +105,8 @@
                 body: JSON.stringify(payload),
             }
 
-            // backend url is http://localhost:8080
-            fetch('http:\/\/localhost:8080/handle', requestBody)
+            // backend url is {{.BrokerURL}}
+            fetch('{{.BrokerURL}}/handle', requestBody)
                 .then(response => response.json())
                 .then(data => {
                     sent.innerHTML = JSON.stringify(payload, null, 4);
@@ -144,8 +144,8 @@
                 body: JSON.stringify(payload),
             }
 
-            // backend url is http://localhost:8080
-            fetch('http:\/\/localhost:8080/handle', requestBody)
+            // backend url is {{.BrokerURL}}
+            fetch('{{.BrokerURL}}/handle', requestBody)
                 .then(response => response.json())
                 .then(data => {
                     sent.innerHTML = JSON.stringify(payload, null, 4);
@@ -181,8 +181,8 @@
                 body: JSON.stringify(payload),
             }
 
-            // backend url is http://localhost:8080
-            fetch('http:\/\/localhost:8080/handle', requestBody)
+            // backend url is {{.BrokerURL}}
+            fetch('{{.BrokerURL}}/handle', requestBody)
                 .then(response => response.json())
                 .then(data => {
                     sent.innerHTML = JSON.stringify(payload, null, 4);
@@ -204,8 +204,8 @@
             const body = {
                 method: 'POST',
             }
-            // backend url is http://localhost:8080
-            fetch('http:\/\/localhost:8080', body)
+            // backend url is {{.BrokerURL}}
+            fetch('{{.BrokerURL}}', body)
                 .then(response => response.json())
                 .then(data => {
                     sent.innerHTML = 'empty post request';
@@ -241,8 +241,8 @@
                 body: JSON.stringify(payload),
             }
 
-            // backend url is http://localhost:8080
-            fetch('http:\/\/localhost:8080/handle', requestBody)
+            // backend url is {{.BrokerURL}}
+            fetch('{{.BrokerURL}}/handle', requestBody)
                 .then(res => res.json())
                 .then(data => {
                     sent.innerHTML = JSON.stringify(payload, null, 4);
