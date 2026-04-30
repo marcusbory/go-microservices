@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentication-deployment
+  labels:
+    app: authentication # cosmetic, or for org / filter / tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication # used for service routing
+  template:
+    metadata:
+      labels:
+        app: authentication # used for service routing
+    spec:
+      containers:
+        - name: authentication
+          image: marcusbory/authentication:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DSN
+              value: host=postgres-service port=5432 user=postgres password=postgres dbname=database sslmode=disable timezone=UTC connect_timeout=5
+              # Must match the name of the service in the project/k8s/postgres-external.yml - use it as a proxy
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentication-service
+spec:
+  selector:
+    app: authentication # used for service routing (as above)
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP # by default, ClusterIP is used
