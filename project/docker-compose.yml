@@ -24,10 +24,10 @@ services:
       replicas: 1
     environment:
       DSN: >-
-        host=postgres port=5432 user=postgres password=postgres dbname=database
-        sslmode=disable timezone=UTC connect_timeout=5
+        host=postgres-service port=5432 user=postgres password=postgres
+        dbname=database sslmode=disable timezone=UTC connect_timeout=5
     depends_on:
-      - postgres
+      - postgres-service
       # ! NOTE: DSN can be listed in object form (DSN:"...") or list form (- DSN="...")
       # ! Note: List form cannot have line break - will spoil parsing
 
@@ -38,7 +38,7 @@ services:
       # Timezone - timezone to use for the database
       # Connect_timeout - timeout to connect to the database
 
-  postgres:
+  postgres-service:
     image: postgres:14.2
     ports:
       - "5432:5432"
