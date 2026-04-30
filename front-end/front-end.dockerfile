@@ -21,6 +21,8 @@ FROM alpine:latest
 RUN mkdir /app
 
 COPY --from=builder /app/frontApp /app
+# copy the website templates to the container
+COPY cmd/web/templates cmd/web/templates
 
 CMD ["/app/frontApp"]
 
