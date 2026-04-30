@@ -34,4 +34,6 @@ spec:
       name: main-port
       port: 80
       targetPort: 80
-  type: ClusterIP # by default, ClusterIP is used
+  type: LoadBalancer 
+  # Change to LoadBalancer to expose the service to the outside world
+  # ! Need to use minikube tunnel to expose the service to the outside world
