@@ -12,7 +12,8 @@ spec:
             backend:
               service:
                 name: front-end-service # Match Service name in k8s/front-end.yml
-                port: 8081
+                port:
+                  number: 8081
     - host: broker-service.info
       http:
         paths:
@@ -21,4 +22,5 @@ spec:
             backend:
               service:
                 name: broker-service # Match Service name in k8s/broker.yml
-                port: 80
+                port:
+                  number: 80
