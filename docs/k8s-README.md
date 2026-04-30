@@ -202,3 +202,59 @@ Then your Pod DSN can remain:
 Notes:
 - If you are using **Docker Desktop Kubernetes**, you likely want `host.docker.internal` instead.
 - If you are using **kind**, you typically need to use the host gateway IP or run Postgres inside the cluster.
+
+### 5) Ingress + Ingress Controller (NGINX): exposing Services publicly
+
+An **Ingress** is a Kubernetes resource that defines HTTP/HTTPS routing rules (hostnames + paths) for traffic
+coming **into** the cluster.
+
+An **Ingress Controller** (e.g. NGINX Ingress) is the component that actually enforces those rules:
+- It runs inside the cluster and watches `Ingress` resources
+- It accepts external traffic (usually via a `LoadBalancer` or a `NodePort` Service in front of the controller)
+- It routes requests to the correct Kubernetes `Service` based on `spec.rules[].host` and `spec.rules[].http.paths[]`
+
+In this repo, `project/ingress.yml` maps public hostnames to internal Services:
+- `host: front-end.info` → `service.name: front-end-service` on `port: 8081` (from `project/k8s/front-end.yml`)
+- `host: broker-service.info` → `service.name: broker-service` on `port: 80` (from `project/k8s/broker.yml`)
+
+#### 5.1 Why `broker-service.info` exists (and how it relates to `BROKER_URL`)
+
+There are two different “names” involved:
+- **Service DNS name (internal)**: `http://broker-service`
+  - Resolvable only inside the cluster (CoreDNS)
+  - Intended for pod-to-pod traffic
+- **Ingress hostname (public)**: `http://broker-service.info`
+  - A public DNS name that should resolve to the Ingress Controller’s external IP
+  - Intended for traffic coming from outside the cluster (e.g. your browser)
+
+The frontend sets `BROKER_URL` to `http://broker-service.info` so browser-based JavaScript can reach the broker
+through the Ingress. If you set `BROKER_URL` to `http://broker-service`, your browser won’t be able to resolve
+that hostname (it only exists inside Kubernetes).
+
+#### 5.2 Security note: this makes the broker publicly reachable
+
+If your Ingress has a `broker-service.info` rule, then the `broker-service` is effectively exposed as a **public API**
+endpoint (anyone who can reach the Ingress can send requests to it).
+
+Whether that’s acceptable depends on your broker endpoints:
+- If they are authenticated, rate-limited, and intended for public use, exposing them can be fine.
+- If they are “internal-only” endpoints, exposing them is risky.
+
+Safer patterns:
+- **Expose only the frontend publicly**, and keep broker internal (remove the `broker-service.info` host rule).
+  - If the frontend still needs to trigger broker actions, do it server-side (frontend backend → `http://broker-service`)
+    rather than browser JS → public broker hostname.
+- If you must expose the broker, add controls at the broker and/or Ingress (TLS, auth, rate limiting, WAF rules).
+
+#### 5.3 Why does `front-end.yml` still need to use `http://broker-service.info`?
+
+Even though the frontend is *hosted* in Kubernetes, the `fetch(...)` calls in your HTML template run in the
+**user’s browser**, not inside the frontend Pod.
+
+So:
+- Browser → `front-end.info` (Ingress) → `front-end-service` works (page delivery)
+- Browser → `broker-service.info` (Ingress) → `broker-service` works (API call)
+- Browser → `broker-service` does **not** work, because `broker-service` is cluster-only DNS
+
+If you want to avoid making the broker publicly reachable, change the flow so the browser calls only the
+frontend, and the frontend (server-side, from inside the cluster) calls `http://broker-service`.
