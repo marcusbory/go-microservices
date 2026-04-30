@@ -149,6 +149,11 @@ For example, in your broker service:
 - `broker-service/cmd/api/main.go` sets `WEB_PORT = "80"` → the broker listens on `:80`
 - therefore your Kubernetes Deployment/Service should align to `containerPort: 80` and `targetPort: 80`
 
+Extra Info on Ports (from perspective of a Service):
+- `nodePort` [Optional, else uses 30000-32767] - The port where external traffic will come in on (only if is `NodePort` Service).
+- `port` - Port of this **Service**. Internal traffic will use this port instead of nodePort.
+- `targetPort` - Target Port of **Pod** to forward traffic to.
+
 ### 3) RabbitMQ DNS: use the Service DNS name
 
 If your broker can’t resolve the RabbitMQ hostname, you’ll see errors like:
