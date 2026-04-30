@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-end-deployment
+  labels:
+    app: front-end # cosmetic, or for org / filter / tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-end # used for service routing
+  template:
+    metadata:
+      labels:
+        app: front-end # used for service routing
+    spec:
+      containers:
+        - name: front-end
+          image: marcusbory/front-end:latest
+          env:
+            - name: BROKER_URL
+              value: http://broker-service.info
+              # ? Below is for testing / local dev only
+              # value: http://broker-service # WITHOUT INGRESS CONTROLLER
+          ports:
+            - containerPort: 8081
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-end-service
+spec:
+  selector:
+    app: front-end # used for service routing (as above)
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP # by default, ClusterIP is used
