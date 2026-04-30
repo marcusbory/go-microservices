@@ -22,6 +22,9 @@ spec:
 
 ---
 
+# ! Not using LoadBalancer for Broker because we will be using a frontend deployment to access the broker service
+# ClusterIP is sufficient
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,6 +37,20 @@ spec:
       name: main-port
       port: 80
       targetPort: 80
-  type: LoadBalancer 
-  # Change to LoadBalancer to expose the service to the outside world
-  # ! Need to use minikube tunnel to expose the service to the outside world
+  type: ClusterIP
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: broker-service
+# spec:
+#   selector:
+#     app: broker
+#   ports:
+#     - protocol: TCP
+#       name: main-port
+#       port: 80
+#       targetPort: 80
+#   type: LoadBalancer 
+    # Change to LoadBalancer to expose the service to the outside world
+    # ! Need to use minikube tunnel to expose the service to the outside world
