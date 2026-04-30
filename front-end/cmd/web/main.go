@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 const FRONTEND_PORT = "8081" // remains unchanged
@@ -45,7 +46,9 @@ func render(w http.ResponseWriter, t string) {
 	var data struct {
 		BrokerURL string
 	}
-	data.BrokerURL = "http://localhost:80" // 80 is the port used by broker service
+	data.BrokerURL = os.Getenv("BROKER_URL")
+	// ? Below is for testing / local dev only
+	// data.BrokerURL = "http://localhost:80" // 80 is the port used by broker service
 
 	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
